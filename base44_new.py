@@ -3,7 +3,7 @@ import requests
 import base64
 
 # המפתח שעובד בוודאות (השני שהוצאת)
-GEMINI_KEY = "AIzaSyBahottwobX98p4CYpg3qQYDPAugiCInj0"
+GEMINI_KEY = "AIzaSyCoIyPC4x0CX1uXISf2lPEdGxD9IVedX4s"
 BASE44_API_KEY = "925f8466c55c444093502ecdf3c480e9"
 APP_ID = "6831d8beaa3e6db4c335c40f"
 
