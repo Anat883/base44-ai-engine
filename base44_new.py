@@ -38,7 +38,7 @@ uploaded_file = st.file_uploader("העלי תוכנית PDF לניתוח", type=
 if uploaded_file and st.button("התחל ניתוח ועדכן Dashboard"):
     with st.spinner("ה-AI מנתח את התוכנית..."):
         try:
-            model = genai.GenerativeModel('gemini-1.5-flash')
+            model = genai.GenerativeModel('gemini-pro')
             prompt = "נתח את תוכנית ה-PDF: ספור פריטי חשמל ואינסטלציה. התעלם מריהוט. החזר טבלה בעברית."
             
             response = model.generate_content([
