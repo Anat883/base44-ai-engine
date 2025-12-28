@@ -7,8 +7,8 @@ GEMINI_KEY = "AIzaSyBUn_R3bqAU0Iz-Nwwrtp50zaI225IvLgM"
 BASE44_API_KEY = "925f8466c55c444093502ecdf3c480e9"
 APP_ID = "6831d8beaa3e6db4c335c40f"
 
-st.set_page_config(page_title="Base44 AI Engine", layout="wide")
-st.title("🏠 Base44 AI - ניתוח כמויות סופי")
+st.set_page_config(page_title="Base44 AI Engine - Professional BoQ", layout="wide")
+st.title("🏠 Base44 AI - הפקת כתב כמויות מקצועי")
 
 def update_base44(project_id, text):
     url = f"https://app.base44.com/api/apps/{APP_ID}/entities/Project/{project_id}"
@@ -17,55 +17,62 @@ def update_base44(project_id, text):
     return requests.put(url, headers=headers, json=payload)
 
 project_id = st.query_params.get("project_id", "")
-uploaded_file = st.file_uploader("העלי PDF", type="pdf")
+uploaded_file = st.file_uploader("העלי תוכנית PDF לספירה וניתוח", type="pdf")
 
-if uploaded_file and st.button("בצע ניתוח"):
-    with st.spinner("סורק תוכניות..."):
-        pdf_base64 = base64.b64encode(uploaded_file.read()).decode('utf-8')
-        
-        # רשימת המודלים שזמינים לך אחרי השדרוג - לפי סדר עדיפות
-        models_to_try = [
-            "gemini-2.0-flash-exp", # הכי חדש (פלאש 2)
-            "gemini-1.5-flash",     # היציב
-            "gemini-1.5-flash-8b"   # המהיר לעקיפת עומס
-        ]
-        
-        success = False
-        prompt = """
-        אתה מומחה לכתבי כמויות. נתח את ה-PDF.
-        1. השב בעברית בלבד.
-        2. בצע ספירה מדויקת של כל אביזר קצה (שקעים, מפסקים, נקודות מאור, נקודות מים).
-        3. אל תכתוב "משוער" - כתוב מספרים סופיים לפי מה שמופיע בשרטוט.
-        4. הצג שתי טבלאות: "חשמל ותקשורת" ו"אינסטלציה וגז".
-        """
+if uploaded_file and st.button("הפק כתב כמויות"):
+    with st.spinner("מנתח סמלים ומחשב כמויות..."):
+        try:
+            pdf_base64 = base64.b64encode(uploaded_file.read()).decode('utf-8')
+            
+            # הגדרת ה-Prompt המקצועי
+            prompt = """
+            אתה מומחה להפקת כתב כמויות (BoQ) לבנייה ושיפוצים. 
+            נתח את תוכנית ה-PDF המצורפת ובצע ספירה מדויקת של כל סמלי החשמל והאינסטלציה (לפי תקן ישראלי המופיע במדריך bvd).
+            
+            דרישות מחייבות:
+            1. השב בעברית בלבד בפורמט טבלאי.
+            2. ספור במדויק כל סמל: שקעים (רגיל/כוח/תלת פאזי), מפסקים, נקודות מאור, נקודות מים, דלוחין, ונקודות גז.
+            3. חלק את התוצאה לפרקים הבאים בדיוק:
+               - פירוק והריסה (זהה קירות להריסה בתוכנית)
+               - בנייה וגבס (קירות חדשים)
+               - אינסטלציה (נקודות מים ודלוחין)
+               - חשמל + תאורה (שקעים, מפסקים, נקודות מאור)
+               - ריצוף וחיפוי, טיח ושפכטל, צבע, מיזוג אויר, שונות.
+            
+            4. מבנה כל טבלה בתוך פרק:
+               | תיאור | יחידה/קומפלט | כמות | מחיר יחידה | סה"כ מחיר | הערות קבלן |
+            
+            5. בסיום, הצג סיכום תקציבי:
+               - סה"כ לא כולל מע"מ
+               - מע"מ (18%)
+               - סה"כ כולל מע"מ
+            
+            הנחיה חשובה: השאר את עמודת "מחיר יחידה" ריקה (או עם 0) כדי שהמשתמש יוכל למלא, אלא אם כן זיהית מחירים בתוכנית. אל תשתמש במילה "משוער", כתוב את המספר המדויק שספרת.
+            """
 
-        for model_name in models_to_try:
-            # הכתובת v1beta היא היחידה שתומכת ב-2.0 כרגע
-            api_url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={GEMINI_KEY}"
+            api_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={GEMINI_KEY}"
             
             payload = {
                 "contents": [{"parts": [
                     {"text": prompt},
                     {"inline_data": {"mime_type": "application/pdf", "data": pdf_base64}}
                 ]}],
-                "generationConfig": {"temperature": 0.0}
+                "generationConfig": {"temperature": 0.1}
             }
             
-            try:
-                res = requests.post(api_url, json=payload)
-                data = res.json()
+            response = requests.post(api_url, json=payload)
+            result = response.json()
+            
+            if 'candidates' in result:
+                ai_text = result['candidates'][0]['content']['parts'][0]['text']
+                st.markdown(ai_text)
                 
-                if 'candidates' in data:
-                    ai_text = data['candidates'][0]['content']['parts'][0]['text']
-                    st.success(f"בוצע בהצלחה (באמצעות {model_name})")
-                    st.markdown(ai_text)
-                    if project_id:
-                        update_base44(project_id, ai_text)
-                    success = True
-                    break
-            except:
-                continue
-        
-        if not success:
-            st.error("גוגל לא מאפשר גישה למודלים. ודאי שוב שה-API פעיל ב-Console.")
-            st.json(data)
+                if project_id:
+                    update_base44(project_id, ai_text)
+                    st.success("✅ כתב הכמויות סונכרן ל-Base44")
+            else:
+                st.error("שגיאה בניתוח הקובץ.")
+                st.json(result)
+                
+        except Exception as e:
+            st.error(f"שגיאה טכנית: {e}")
