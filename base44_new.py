@@ -2,14 +2,13 @@ import streamlit as st
 import requests
 import base64
 
-# המפתח החדש והמדויק שמצאת ב-AI Studio
+# המפתח החדש והעובד שלך
 GEMINI_KEY = "AIzaSyAAPlDNmchr51ktVwSMRXWIehFrG4n_szY"
-# נתוני ה-Base44 שלך
 BASE44_API_KEY = "925f8466c55c444093502ecdf3c480e9"
 APP_ID = "6831d8beaa3e6db4c335c40f"
 
-st.set_page_config(page_title="Base44 AI Engine 2.0", layout="wide")
-st.title("🏠 Base44 AI - מנוע ניתוח (גרסה 2.0)")
+st.set_page_config(page_title="Base44 AI Engine", layout="wide")
+st.title("🏠 Base44 AI - מנוע ניתוח")
 
 def update_base44(project_id, text):
     url = f"https://app.base44.com/api/apps/{APP_ID}/entities/Project/{project_id}"
@@ -21,18 +20,17 @@ project_id = st.query_params.get("project_id", "")
 uploaded_file = st.file_uploader("העלי תוכנית PDF לניתוח", type="pdf")
 
 if uploaded_file and st.button("התחל ניתוח"):
-    with st.spinner("ה-AI (גרסה 2.0) מנתח את התוכנית..."):
+    with st.spinner("מנתח תוכנית..."):
         try:
-            # המרת הקובץ ל-Base64
             pdf_base64 = base64.b64encode(uploaded_file.read()).decode('utf-8')
             
-            # הכתובת המדויקת של המודל החדש שמצאת
-            api_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={GEMINI_KEY}"
+            # חזרה למודל 1.5 פלאש שיש לו מכסה גדולה בחינם
+            api_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={GEMINI_KEY}"
             
             payload = {
                 "contents": [{
                     "parts": [
-                        {"text": "Analyze this construction blueprint. Create a clear Hebrew table listing electrical and plumbing quantities. Ignore furniture."},
+                        {"text": "Analyze this blueprint. Create a Hebrew table of electrical and plumbing items."},
                         {"inline_data": {"mime_type": "application/pdf", "data": pdf_base64}}
                     ]
                 }]
@@ -47,10 +45,10 @@ if uploaded_file and st.button("התחל ניתוח"):
                 
                 if project_id:
                     update_base44(project_id, ai_text)
-                    st.success("✅ הנתונים נשלחו בהצלחה ל-Dashboard!")
+                    st.success("✅ ה-Dashboard עודכן!")
             else:
-                st.error("שגיאה בתשובת ה-AI")
-                st.json(result) # נדפיס רק אם יש תקלה
+                st.error("שגיאת מכסה או מודל")
+                st.json(result)
                 
         except Exception as e:
-            st.error(f"שגיאה בתהליך: {e}")
+            st.error(f"שגיאה: {e}")
