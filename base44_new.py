@@ -5,7 +5,7 @@ import json
 import pandas as pd
 
 # ניסיון למשוך את המפתח מה-Secrets
-gemini_key = st.secrets.get("AIzaSyD9fxrikrHObKv7U7bp9aWdQ1upFn_kvpw")
+gemini_key = st.secrets.get("GEMINI_KEY")
 
 st.set_page_config(page_title="ADCO", layout="wide")
 st.title("🏗️ ADCO")
