@@ -12,13 +12,13 @@ except Exception:
     st.error("⚠️ המפתח (GEMINI_KEY) חסר ב-Secrets!")
     st.stop()
 
-# 2. הגדרות עיצוב RTL (מימין לשמאל)
+# 2. הגדרות עיצוב RTL
 st.markdown("""
     <style>
     .main { direction: rtl; text-align: right; }
     div[data-testid="stBlock"] { direction: rtl; text-align: right; }
     div[data-testid="stMarkdownContainer"] { text-align: right; direction: rtl; }
-    .stButton>button { width: 100%; border-radius: 5px; background-color: #f0f2f6; height: 3em; font-weight: bold; }
+    .stButton>button { width: 100%; border-radius: 5px; height: 3.5em; font-weight: bold; }
     table { direction: rtl; margin-left: auto; margin-right: 0; width: 100%; border-collapse: collapse; }
     th { text-align: right !important; background-color: #f8f9fa; padding: 12px; border: 1px solid #dee2e6; }
     td { text-align: right !important; padding: 10px; border: 1px solid #dee2e6; }
@@ -27,13 +27,13 @@ st.markdown("""
 
 st.title("🏗️ ADCO - אומדן כמויות מקצועי")
 
-# 3. ניהול תיקונים (למידה) ב-Sidebar
+# 3. ניהול תיקונים ב-Sidebar
 if 'corrections' not in st.session_state:
     st.session_state.corrections = []
 
 with st.sidebar:
     st.header("🧠 זיכרון למידה")
-    user_input = st.text_area("הנחיה לתיקון (לדוגמה: 'הריבוע הוא שקע כוח'):")
+    user_input = st.text_area("הנחיה לתיקון (לדוגמה: 'יש לספור כל חצי עיגול כנקודת תאורת קיר'):")
     if st.button("הוסף הנחיה"):
         if user_input:
             st.session_state.corrections.append(user_input)
@@ -50,30 +50,34 @@ with st.sidebar:
 # 4. העלאת קבצים
 col1, col2 = st.columns(2)
 with col1:
-    plan_file = st.file_uploader("העלי תוכנית PDF (חשמל/אינסטלציה)", type=["pdf", "png", "jpg", "jpeg"])
+    plan_file = st.file_uploader("העלי תוכנית PDF", type=["pdf", "png", "jpg", "jpeg"])
 with col2:
-    price_file = st.file_uploader("העלי מחירון / הצעת מחיר (אופציונלי)", type=["xlsx", "csv"])
+    price_file = st.file_uploader("מחירון (אופציונלי)", type=["xlsx", "csv"])
 
-# 5. ניתוח והורדה
+# משתנה לשמירת תוצאות בזיכרון הדף
+if 'analysis_results' not in st.session_state:
+    st.session_state.analysis_results = None
+
+# 5. כפתור ניתוח
 if plan_file:
-    if st.button("הפעל ניתוח ADCO מלא"):
-        with st.spinner("ADCO סורקת כל סמל וסמל..."):
+    if st.button("🔍 הפעל ניתוח ADCO עמוק (סריקת כל הסמלים)"):
+        with st.spinner("ADCO סורקת כל חדר וחדר בתוכנית..."):
             try:
                 base64_pdf = base64.b64encode(plan_file.read()).decode('utf-8')
                 corrections_str = "\n".join(st.session_state.corrections)
                 
-                # פרומפט משופר שמחזיר את רמת הפירוט המקורית
+                # פרומפט "קשוח" לדיוק מקסימלי
                 prompt = f"""
-                אתה מומחה בכיר לאומדן בנייה. נתח את ה-PDF ובצע ספירה מדויקת ביותר.
+                אתה מעריך כמויות מקצועי. נתח את השרטוט בצורה קפדנית.
                 
-                דרישות ספירה:
-                1. הפרדה קריטית: ספור בנפרד כל סוג שקע (שקע שירות, שקע כוח, שקע תלת-פאזי, שקע מוגן מים, נקודת מאור קיר, נקודת מאור תקרה, מפסק מחליף וכו').
-                2. פרקים: חלק לפרקים: "פירוק והריסה", "בנייה וגבס", "חשמל ותקשורת", "אינסטלציה וגז".
-                3. מבנה לכל שורה: 'תיאור', 'מחלקה', 'יחידה', 'כמות', 'הערות'.
-                4. הנחיות משתמש: {corrections_str}
-                5. אל תעגל מספרים. אם יש 17 שקעים, כתוב 17.
+                הוראות עבודה:
+                1. סרוק כל חדר בנפרד וספור כל סמל. אל תפספס שום שקע!
+                2. הפרדה מלאה: כל סוג שקע או נקודה (שקע כוח, שקע שירות, מוגן מים, תלת פאזי, תאורה, טלפון, תקשורת וכו') חייב להופיע בשורה נפרדת.
+                3. אם יש סמל שמופיע במקרא (Legend) אך לא זיהית בשרטוט, ציין זאת בהערות.
+                4. חלוקה לפרקים: "חשמל ותקשורת", "אינסטלציה וגז", "בנייה והריסה".
+                5. הנחיות למידה: {corrections_str}
                 
-                החזר JSON בלבד במבנה: {{"items": [...]}}
+                החזר JSON נקי בלבד: {{"items": [{"{"תיאור": "...", "מחלקה": "...", "יחידה": "...", "כמות": 0, "הערות": "..."}"}]}}
                 """
 
                 api_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={gemini_key}"
@@ -86,34 +90,34 @@ if plan_file:
                 data = res.json()
                 
                 if 'candidates' in data:
-                    clean_text = data['candidates'][0]['content']['parts'][0]['text']
-                    result_json = json.loads(clean_text)
-                    items = result_json.get('items', [])
-                    
-                    if items:
-                        df = pd.DataFrame(items)
-                        
-                        # תצוגה על המסך - רשימה מלאה לפי פרקים
-                        st.success("✅ הניתוח הושלם. להלן רשימת הכמויות:")
-                        
-                        for dept in ["פירוק והריסה", "בנייה וגבס", "חשמל ותקשורת", "אינסטלציה וגז"]:
-                            if 'מחלקה' in df.columns:
-                                subset = df[df['מחלקה'] == dept]
-                                if not subset.empty:
-                                    st.subheader(f"📋 {dept}")
-                                    st.table(subset)
-                        
-                        # הכנת האקסל (כולל התקנה פנימית של xlsxwriter)
-                        output = BytesIO()
-                        with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
-                            df.to_excel(writer, index=False, sheet_name='כתב כמויות ADCO')
-                        
-                        st.write("---")
-                        st.download_button(
-                            label="📥 הורד כתב כמויות מלא לאקסל",
-                            data=output.getvalue(),
-                            file_name=f"ADCO_Estimate_{plan_file.name}.xlsx",
-                            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-                        )
-                    else:
-                        st.warning("לא
+                    raw_content = data['candidates'][0]['content']['parts'][0]['text']
+                    st.session_state.analysis_results = json.loads(raw_content).get('items', [])
+                else:
+                    st.error("ה-AI לא הצליח להחזיר תשובה. בדקי את הקובץ או המפתח.")
+            except Exception as e:
+                st.error(f"שגיאה בניתוח: {e}")
+
+# 6. הצגת תוצאות והורדה (רק אם יש תוצאות)
+if st.session_state.analysis_results:
+    items = st.session_state.analysis_results
+    df = pd.DataFrame(items)
+    
+    st.success(f"✅ זוהו {len(df)} סעיפים שונים. להלן הפירוט:")
+    
+    # תצוגה על המסך לפי פרקים
+    for dept in df['מחלקה'].unique():
+        st.subheader(f"📋 פרק: {dept}")
+        st.table(df[df['מחלקה'] == dept])
+    
+    # כפתור הורדה לאקסל
+    output = BytesIO()
+    with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+        df.to_excel(writer, index=False, sheet_name='כתב כמויות ADCO')
+    
+    st.write("---")
+    st.download_button(
+        label="📥 הורד את הרשימה שלמעלה לקובץ אקסל (Excel)",
+        data=output.getvalue(),
+        file_name=f"ADCO_Estimate_{plan_file.name}.xlsx",
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
