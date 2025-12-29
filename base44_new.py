@@ -7,10 +7,10 @@ import json
 try:
     GEMINI_KEY = st.secrets["GEMINI_KEY"]
 except:
-    st.warning("נא להגדיר GEMINI_KEY ב-Secrets")
+    st.warning("AIzaSyD9fxrikrHObKv7U7bp9aWdQ1upFn_kvpw")
     st.stop()
 
-BASE44_API_KEY = "AIzaSyD9fxrikrHObKv7U7bp9aWdQ1upFn_kvpw"
+BASE44_API_KEY = "925f8466c55c444093502ecdf3c480e9"
 APP_ID = "6831d8beaa3e6db4c335c40f"
 
 # ... (חלקי הממשק וה-Prompt נשארים אותו דבר) ...
