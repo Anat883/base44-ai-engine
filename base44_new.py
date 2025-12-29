@@ -1,53 +1,75 @@
 import streamlit as st
 import requests
 import base64
+import json
+import pandas as pd
 
-# המפתח המשודרג שלך
+# הגדרות מפתחות
 GEMINI_KEY = "AIzaSyBUn_R3bqAU0Iz-Nwwrtp50zaI225IvLgM"
 BASE44_API_KEY = "925f8466c55c444093502ecdf3c480e9"
 APP_ID = "6831d8beaa3e6db4c335c40f"
 
-st.set_page_config(page_title="Base44 AI Engine - Professional BoQ", layout="wide")
-st.title("🏠 Base44 AI - הפקת כתב כמויות מקצועי")
+st.set_page_config(page_title="Base44 AI - Learning Analyst", layout="wide")
+st.title("🏗️ Base44 AI - ניתוח סמלים עם למידה ותיקון")
 
-def update_base44(project_id, text):
+# אתחול זיכרון לתיקונים של המשתמשת
+if 'user_corrections' not in st.session_state:
+    st.session_state.user_corrections = []
+
+def update_base44(project_id, data_json):
     url = f"https://app.base44.com/api/apps/{APP_ID}/entities/Project/{project_id}"
     headers = {'api_key': BASE44_API_KEY, 'Content-Type': 'application/json'}
-    payload = {"additional_services": text, "status": "מנותח"}
+    summary = "### אומדן סופי (לאחר תיקוני משתמש):\n"
+    for item in data_json.get('quantities', []):
+        summary += f"- {item['canonical_item_name_he']}: {item['count']} {item['unit']}\n"
+    
+    payload = {
+        "additional_services": summary,
+        "status": "מנותח",
+        "description": json.dumps(data_json, indent=2, ensure_ascii=False)
+    }
     return requests.put(url, headers=headers, json=payload)
 
-project_id = st.query_params.get("project_id", "")
-uploaded_file = st.file_uploader("העלי תוכנית PDF לספירה וניתוח", type="pdf")
+# תפריט צד לניהול התיקונים
+with st.sidebar:
+    st.header("🧠 זיכרון למידה")
+    if st.session_state.user_corrections:
+        st.write("תיקונים פעילים:")
+        for i, corr in enumerate(st.session_state.user_corrections):
+            st.info(f"{i+1}. {corr}")
+        if st.button("נקה זיכרון"):
+            st.session_state.user_corrections = []
+            st.rerun()
+    else:
+        st.write("אין תיקונים עדיין. ה-AI לומד מהערותייך.")
 
-if uploaded_file and st.button("הפק כתב כמויות"):
-    with st.spinner("מנתח סמלים ומחשב כמויות..."):
+# ממשק ראשי
+plan_file = st.file_uploader("העלי תוכנית PDF", type=["pdf", "png", "jpg"])
+user_feedback = st.text_input("הערה ל-AI (למשל: 'הסמל שנראה כמו משולש הוא נקודת גז, לא מים')", placeholder="הזני תיקון כאן כדי לשפר את הדיוק")
+
+if user_feedback and st.button("הוסף תיקון ונתח מחדש"):
+    st.session_state.user_corrections.append(user_feedback)
+
+if plan_file and st.button("הפעל ניתוח"):
+    with st.spinner("סורק סמלים ומיישם תיקוני משתמש..."):
         try:
-            pdf_base64 = base64.b64encode(uploaded_file.read()).decode('utf-8')
+            plan_base64 = base64.b64encode(plan_file.read()).decode('utf-8')
             
-            # הגדרת ה-Prompt המקצועי
-            prompt = """
-            אתה מומחה להפקת כתב כמויות (BoQ) לבנייה ושיפוצים. 
-            נתח את תוכנית ה-PDF המצורפת ובצע ספירה מדויקת של כל סמלי החשמל והאינסטלציה (לפי תקן ישראלי המופיע במדריך bvd).
+            # בניית ההנחיה עם התיקונים
+            corrections_text = "\n".join([f"- {c}" for c in st.session_state.user_corrections])
             
-            דרישות מחייבות:
-            1. השב בעברית בלבד בפורמט טבלאי.
-            2. ספור במדויק כל סמל: שקעים (רגיל/כוח/תלת פאזי), מפסקים, נקודות מאור, נקודות מים, דלוחין, ונקודות גז.
-            3. חלק את התוצאה לפרקים הבאים בדיוק:
-               - פירוק והריסה (זהה קירות להריסה בתוכנית)
-               - בנייה וגבס (קירות חדשים)
-               - אינסטלציה (נקודות מים ודלוחין)
-               - חשמל + תאורה (שקעים, מפסקים, נקודות מאור)
-               - ריצוף וחיפוי, טיח ושפכטל, צבע, מיזוג אויר, שונות.
+            prompt = f"""
+            SYSTEM: You are a professional estimator. Scan the plan and count ALL symbols.
             
-            4. מבנה כל טבלה בתוך פרק:
-               | תיאור | יחידה/קומפלט | כמות | מחיר יחידה | סה"כ מחיר | הערות קבלן |
+            USER CORRECTIONS TO REMEMBER:
+            {corrections_text if corrections_text else "None yet. Use your own logic."}
             
-            5. בסיום, הצג סיכום תקציבי:
-               - סה"כ לא כולל מע"מ
-               - מע"מ (18%)
-               - סה"כ כולל מע"מ
+            GOAL:
+            1. Identify every graphical symbol.
+            2. Even if not in BVD, infer meaning from context (Kitchen/Bath/Labels).
+            3. If a symbol matches a user correction above, follow the correction strictly.
             
-            הנחיה חשובה: השאר את עמודת "מחיר יחידה" ריקה (או עם 0) כדי שהמשתמש יוכל למלא, אלא אם כן זיהית מחירים בתוכנית. אל תשתמש במילה "משוער", כתוב את המספר המדויק שספרת.
+            OUTPUT: Strict JSON only with quantities and flags.
             """
 
             api_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={GEMINI_KEY}"
@@ -55,24 +77,33 @@ if uploaded_file and st.button("הפק כתב כמויות"):
             payload = {
                 "contents": [{"parts": [
                     {"text": prompt},
-                    {"inline_data": {"mime_type": "application/pdf", "data": pdf_base64}}
+                    {"inline_data": {"mime_type": plan_file.type, "data": plan_base64}}
                 ]}],
-                "generationConfig": {"temperature": 0.1}
+                "generationConfig": {"temperature": 0.1, "response_mime_type": "application/json"}
             }
             
             response = requests.post(api_url, json=payload)
-            result = response.json()
+            data = response.json()
             
-            if 'candidates' in result:
-                ai_text = result['candidates'][0]['content']['parts'][0]['text']
-                st.markdown(ai_text)
+            if 'candidates' in data:
+                result = json.loads(data['candidates'][0]['content']['parts'][0]['text'])
                 
+                # הצגת התוצאות
+                st.subheader("📊 תוצאות הניתוח")
+                st.table(result.get('quantities', []))
+                
+                if result.get('flags'):
+                    st.warning("⚠️ דגלים מהתוכנית:")
+                    for f in result['flags'].get('questions_for_architect', []):
+                        st.write(f"- {f}")
+                
+                project_id = st.query_params.get("project_id", "")
                 if project_id:
-                    update_base44(project_id, ai_text)
-                    st.success("✅ כתב הכמויות סונכרן ל-Base44")
+                    update_base44(project_id, result)
+                    st.success("✅ סונכרן ל-Base44")
             else:
-                st.error("שגיאה בניתוח הקובץ.")
-                st.json(result)
+                st.error("שגיאה בניתוח.")
+                st.json(data)
                 
         except Exception as e:
-            st.error(f"שגיאה טכנית: {e}")
+            st.error(f"שגיאה: {e}")
