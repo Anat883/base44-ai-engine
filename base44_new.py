@@ -5,9 +5,9 @@ import json
 
 # משיכת המפתח מהכספת
 try:
-    GEMINI_KEY = st.secrets["GEMINI_KEY"]
+    GEMINI_KEY = st.secrets["AIzaSyD9fxrikrHObKv7U7bp9aWdQ1upFn_kvpw"]
 except:
-    st.warning("AIzaSyD9fxrikrHObKv7U7bp9aWdQ1upFn_kvpw")
+    st.warning("נא להגדיר GEMINI_KEY ב-Secrets")
     st.stop()
 
 BASE44_API_KEY = "925f8466c55c444093502ecdf3c480e9"
