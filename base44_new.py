@@ -5,7 +5,7 @@ import json
 import pandas as pd
 
 # הגדרות מפתחות
-GEMINI_KEY = "AIzaSyBUn_R3bqAU0Iz-Nwwrtp50zaI225IvLgM"
+GEMINI_KEY = "AIzaSyD9fxrikrHObKv7U7bp9aWdQ1upFn_kvpw"
 BASE44_API_KEY = "925f8466c55c444093502ecdf3c480e9"
 APP_ID = "6831d8beaa3e6db4c335c40f"
 
