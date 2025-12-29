@@ -2,59 +2,93 @@ import streamlit as st
 import requests
 import base64
 import json
+import pandas as pd
 
-# משיכת המפתח מהכספת
-try:
-    GEMINI_KEY = st.secrets["AIzaSyD9fxrikrHObKv7U7bp9aWdQ1upFn_kvpw"]
-except:
-    st.warning("נא להגדיר GEMINI_KEY ב-Secrets")
+# ניסיון למשוך את המפתח מה-Secrets
+gemini_key = st.secrets.get("AIzaSyD9fxrikrHObKv7U7bp9aWdQ1upFn_kvpw")
+
+st.set_page_config(page_title="ADCO", layout="wide")
+st.title("🏗️ Base44 AI - ניתוח סמלים ואומדן מקצועי")
+
+# בדיקה אם המפתח קיים
+if not gemini_key:
+    st.error("⚠️ המפתח חסר! כנסי ל-Settings > Secrets ב-Streamlit והדביקי: GEMINI_KEY = 'YOUR_KEY'")
     st.stop()
 
-BASE44_API_KEY = "925f8466c55c444093502ecdf3c480e9"
-APP_ID = "6831d8beaa3e6db4c335c40f"
+# פונקציית עדכון ל-Base44
+def update_base44(project_id, data_json):
+    api_key_b44 = "925f8466c55c444093502ecdf3c480e9"
+    app_id = "6831d8beaa3e6db4c335c40f"
+    url = f"https://app.base44.com/api/apps/{app_id}/entities/Project/{project_id}"
+    
+    summary = "### אומדן כמויות AI:\n"
+    for item in data_json.get('quantities', []):
+        summary += f"- {item.get('canonical_item_name_he')}: {item.get('count')} {item.get('unit')}\n"
+    
+    payload = {
+        "additional_services": summary,
+        "status": "מנותח",
+        "description": json.dumps(data_json, indent=2, ensure_ascii=False)
+    }
+    return requests.put(url, headers={'api_key': api_key_b44}, json=payload)
 
-# ... (חלקי הממשק וה-Prompt נשארים אותו דבר) ...
+# ניהול תיקונים (למידה)
+if 'corrections' not in st.session_state:
+    st.session_state.corrections = []
 
-if 'candidates' in data:
-    try:
-        raw_text = data['candidates'][0]['content']['parts'][0]['text']
-        # ניקוי תווים מיותרים שגוגל לפעמים מוסיף (כמו ```json)
-        clean_text = raw_text.replace("```json", "").replace("```", "").strip()
-        result = json.loads(clean_text)
-        
-        # בדיקה אם התוצאה היא רשימה או מילון (תיקון השגיאה שלך)
-        if isinstance(result, list):
-            # אם זו רשימה, נהפוך אותה למבנה הצפוי
-            final_data = {"quantities": result, "flags": {}}
-        else:
-            final_data = result
+with st.sidebar:
+    st.header("🧠 זיכרון למידה")
+    user_input = st.text_area("הערה לתיקון (למשל: 'העיגול הוא תאורה'):")
+    if st.button("הוסף הנחיה"):
+        st.session_state.corrections.append(user_input)
+        st.rerun()
+    if st.button("נקה זיכרון"):
+        st.session_state.corrections = []
+        st.rerun()
 
-        # תצוגה
-        st.subheader("📊 תוצאות הניתוח")
-        quantities = final_data.get('quantities', [])
-        if quantities:
-            st.table(quantities)
-        else:
-            st.write("לא נמצאו כמויות לספירה.")
+# העלאת קבצים
+col1, col2 = st.columns(2)
+with col1:
+    plan_file = st.file_uploader("תוכנית PDF", type=["pdf", "png", "jpg"])
+with col2:
+    price_file = st.file_uploader("מחירון אקסל (אופציונלי)", type=["xlsx"])
 
-        if final_data.get('flags'):
-            st.warning("⚠️ דגלים מהתוכנית:")
-            flags = final_data['flags']
-            # טיפול בפורמטים שונים של flags
-            if isinstance(flags, dict):
-                for k, v in flags.items():
-                    if isinstance(v, list):
-                        for item in v: st.write(f"- {item}")
-            elif isinstance(flags, list):
-                for f in flags: st.write(f"- {f}")
+if plan_file and st.button("הפעל ניתוח מלא"):
+    with st.spinner("מנתח סמלים ומבצע הצלבות..."):
+        try:
+            base64_pdf = base64.b64encode(plan_file.read()).decode('utf-8')
+            
+            # בניית הפרומפט המקצועי
+            corrections_str = "\n".join(st.session_state.corrections)
+            prompt = f"""
+            You are a professional Israeli construction estimator. 
+            1. Scan the plan and count ALL electrical and plumbing symbols.
+            2. Use BVD legend as baseline but also infer non-standard symbols from context.
+            3. User specific instructions: {corrections_str}
+            4. Return ONLY a JSON with keys: 'quantities' (list of objects) and 'flags' (list of risks/questions).
+            5. Hebrew for item names.
+            """
 
-        # סנכרון ל-Base44
-        project_id = st.query_params.get("project_id", "")
-        if project_id:
-            # (פונקציית העדכון שלך)
-            st.success("✅ נשלח ל-Base44")
-
-    except Exception as parse_error:
-        st.error(f"שגיאה בפענוח הנתונים: {parse_error}")
-        st.text("הטקסט הגולמי שהתקבל:")
-        st.code(raw_text)
+            api_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={gemini_key}"
+            payload = {
+                "contents": [{"parts": [{"text": prompt}, {"inline_data": {"mime_type": plan_file.type, "data": base64_pdf}}]}],
+                "generationConfig": {"temperature": 0.1, "response_mime_type": "application/json"}
+            }
+            
+            res = requests.post(api_url, json=payload)
+            raw_res = res.json()
+            
+            if 'candidates' in raw_res:
+                clean_json = json.loads(raw_res['candidates'][0]['content']['parts'][0]['text'])
+                st.subheader("📊 כמויות שזוהו")
+                st.table(clean_json.get('quantities', []))
+                
+                project_id = st.query_params.get("project_id")
+                if project_id:
+                    update_base44(project_id, clean_json)
+                    st.success("✅ עודכן ב-Base44")
+            else:
+                st.error("שגיאה בתגובת ה-AI")
+                st.json(raw_res)
+        except Exception as e:
+            st.error(f"שגיאה: {e}")
