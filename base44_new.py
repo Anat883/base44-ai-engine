@@ -8,7 +8,7 @@ import pandas as pd
 gemini_key = st.secrets.get("AIzaSyD9fxrikrHObKv7U7bp9aWdQ1upFn_kvpw")
 
 st.set_page_config(page_title="ADCO", layout="wide")
-st.title("🏗️ Base44 AI - ניתוח סמלים ואומדן מקצועי")
+st.title("🏗️ ADCO")
 
 # בדיקה אם המפתח קיים
 if not gemini_key:
