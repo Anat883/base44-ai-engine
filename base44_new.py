@@ -12,20 +12,20 @@ except Exception:
     st.error("⚠️ המפתח (GEMINI_KEY) חסר ב-Secrets!")
     st.stop()
 
-# 2. הגדרות עיצוב לימין לשמאל (RTL)
+# 2. הגדרות עיצוב RTL (מימין לשמאל)
 st.markdown("""
     <style>
     .main { direction: rtl; text-align: right; }
     div[data-testid="stBlock"] { direction: rtl; text-align: right; }
     div[data-testid="stMarkdownContainer"] { text-align: right; direction: rtl; }
-    .stButton>button { width: 100%; border-radius: 5px; background-color: #f0f2f6; }
+    .stButton>button { width: 100%; border-radius: 5px; background-color: #f0f2f6; height: 3em; font-weight: bold; }
     table { direction: rtl; margin-left: auto; margin-right: 0; width: 100%; border-collapse: collapse; }
-    th { text-align: right !important; background-color: #f0f2f6; padding: 10px; }
-    td { text-align: right !important; padding: 10px; border-bottom: 1px solid #ddd; }
+    th { text-align: right !important; background-color: #f8f9fa; padding: 12px; border: 1px solid #dee2e6; }
+    td { text-align: right !important; padding: 10px; border: 1px solid #dee2e6; }
     </style>
     """, unsafe_allow_html=True)
 
-st.title("🏗️ ADCO - אומדן כמויות וניתוח תוכניות")
+st.title("🏗️ ADCO - אומדן כמויות מקצועי")
 
 # 3. ניהול תיקונים (למידה) ב-Sidebar
 if 'corrections' not in st.session_state:
@@ -33,7 +33,7 @@ if 'corrections' not in st.session_state:
 
 with st.sidebar:
     st.header("🧠 זיכרון למידה")
-    user_input = st.text_area("הנחיה לתיקון (למשל: 'הריבוע עם ה-X הוא שקע כוח'):")
+    user_input = st.text_area("הנחיה לתיקון (לדוגמה: 'הריבוע הוא שקע כוח'):")
     if st.button("הוסף הנחיה"):
         if user_input:
             st.session_state.corrections.append(user_input)
@@ -56,19 +56,24 @@ with col2:
 
 # 5. ניתוח והורדה
 if plan_file:
-    if st.button("הפעל ניתוח ADCO והפק אקסל"):
-        with st.spinner("מנתח סמלים ומכין כתב כמויות..."):
+    if st.button("הפעל ניתוח ADCO מלא"):
+        with st.spinner("ADCO סורקת כל סמל וסמל..."):
             try:
                 base64_pdf = base64.b64encode(plan_file.read()).decode('utf-8')
                 corrections_str = "\n".join(st.session_state.corrections)
                 
+                # פרומפט משופר שמחזיר את רמת הפירוט המקורית
                 prompt = f"""
-                אתה מומחה לאומדן בנייה בישראל. נתח את התוכנית והפק כתב כמויות בפורמט JSON.
-                1. הפרדה מלאה: כל סוג סמל בשורה נפרדת.
-                2. פרקים: סווג ל"חשמל ותקשורת" או "אינסטלציה וגז".
-                3. מבנה: 'תיאור', 'מחלקה', 'יחידה', 'כמות', 'הערות'.
-                4. למידה: השתמש בתיקונים: {corrections_str}
-                5. החזר JSON נקי בלבד: {{"items": [...]}}
+                אתה מומחה בכיר לאומדן בנייה. נתח את ה-PDF ובצע ספירה מדויקת ביותר.
+                
+                דרישות ספירה:
+                1. הפרדה קריטית: ספור בנפרד כל סוג שקע (שקע שירות, שקע כוח, שקע תלת-פאזי, שקע מוגן מים, נקודת מאור קיר, נקודת מאור תקרה, מפסק מחליף וכו').
+                2. פרקים: חלק לפרקים: "פירוק והריסה", "בנייה וגבס", "חשמל ותקשורת", "אינסטלציה וגז".
+                3. מבנה לכל שורה: 'תיאור', 'מחלקה', 'יחידה', 'כמות', 'הערות'.
+                4. הנחיות משתמש: {corrections_str}
+                5. אל תעגל מספרים. אם יש 17 שקעים, כתוב 17.
+                
+                החזר JSON בלבד במבנה: {{"items": [...]}}
                 """
 
                 api_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={gemini_key}"
@@ -81,36 +86,34 @@ if plan_file:
                 data = res.json()
                 
                 if 'candidates' in data:
-                    result_json = json.loads(data['candidates'][0]['content']['parts'][0]['text'])
+                    clean_text = data['candidates'][0]['content']['parts'][0]['text']
+                    result_json = json.loads(clean_text)
                     items = result_json.get('items', [])
                     
                     if items:
                         df = pd.DataFrame(items)
                         
-                        # תצוגה לפי פרקים
-                        for dept in ["חשמל ותקשורת", "אינסטלציה וגז"]:
+                        # תצוגה על המסך - רשימה מלאה לפי פרקים
+                        st.success("✅ הניתוח הושלם. להלן רשימת הכמויות:")
+                        
+                        for dept in ["פירוק והריסה", "בנייה וגבס", "חשמל ותקשורת", "אינסטלציה וגז"]:
                             if 'מחלקה' in df.columns:
                                 subset = df[df['מחלקה'] == dept]
                                 if not subset.empty:
-                                    st.subheader(f"📋 פרק: {dept}")
+                                    st.subheader(f"📋 {dept}")
                                     st.table(subset)
                         
-                        # יצירת קובץ אקסל (כאן השתמשנו ב-xlsxwriter)
+                        # הכנת האקסל (כולל התקנה פנימית של xlsxwriter)
                         output = BytesIO()
                         with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
-                            df.to_excel(writer, index=False, sheet_name='ADCO_Estimate')
+                            df.to_excel(writer, index=False, sheet_name='כתב כמויות ADCO')
                         
                         st.write("---")
                         st.download_button(
-                            label="📥 הורד כתב כמויות לאקסל (Excel)",
+                            label="📥 הורד כתב כמויות מלא לאקסל",
                             data=output.getvalue(),
                             file_name=f"ADCO_Estimate_{plan_file.name}.xlsx",
                             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                         )
                     else:
-                        st.warning("לא זוהו סמלים.")
-                else:
-                    st.error("שגיאה בתגובת ה-AI.")
-
-            except Exception as e:
-                st.error(f"שגיאה בתהליך: {e}")
+                        st.warning("לא
