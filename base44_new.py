@@ -9,7 +9,7 @@ from io import BytesIO
 try:
     gemini_key = st.secrets["GEMINI_KEY"]
 except Exception:
-    st.error("⚠️ המפתח (GEMINI_KEY) חסר ב-Secrets של Streamlit!")
+    st.error("⚠️ המפתח (GEMINI_KEY) חסר ב-Secrets!")
     st.stop()
 
 # 2. הגדרות עיצוב לימין לשמאל (RTL)
@@ -47,11 +47,16 @@ with st.sidebar:
             st.session_state.corrections = []
             st.rerun()
 
-# 4. העלאת קבצים וניתוח
-plan_file = st.file_uploader("העלי תוכנית PDF (חשמל או אינסטלציה)", type=["pdf", "png", "jpg", "jpeg"])
+# 4. העלאת קבצים
+col1, col2 = st.columns(2)
+with col1:
+    plan_file = st.file_uploader("העלי תוכנית PDF (חשמל/אינסטלציה)", type=["pdf", "png", "jpg", "jpeg"])
+with col2:
+    price_file = st.file_uploader("העלי מחירון / הצעת מחיר (אופציונלי)", type=["xlsx", "csv"])
 
+# 5. ניתוח והורדה
 if plan_file:
-    if st.button("הפעל ניתוח ADCO"):
+    if st.button("הפעל ניתוח ADCO והפק אקסל"):
         with st.spinner("מנתח סמלים ומכין כתב כמויות..."):
             try:
                 base64_pdf = base64.b64encode(plan_file.read()).decode('utf-8')
@@ -81,7 +86,8 @@ if plan_file:
                     
                     if items:
                         df = pd.DataFrame(items)
-                        # תצוגה
+                        
+                        # תצוגה לפי פרקים
                         for dept in ["חשמל ותקשורת", "אינסטלציה וגז"]:
                             if 'מחלקה' in df.columns:
                                 subset = df[df['מחלקה'] == dept]
@@ -89,11 +95,12 @@ if plan_file:
                                     st.subheader(f"📋 פרק: {dept}")
                                     st.table(subset)
                         
-                        # אקסל
+                        # יצירת קובץ אקסל (כאן השתמשנו ב-xlsxwriter)
                         output = BytesIO()
                         with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
                             df.to_excel(writer, index=False, sheet_name='ADCO_Estimate')
                         
+                        st.write("---")
                         st.download_button(
                             label="📥 הורד כתב כמויות לאקסל (Excel)",
                             data=output.getvalue(),
@@ -106,9 +113,4 @@ if plan_file:
                     st.error("שגיאה בתגובת ה-AI.")
 
             except Exception as e:
-                st.error(f"שגיאה: {e}")
-
-# זיהוי פרויקט (אופציונלי)
-project_id = st.query_params.get("project_id")
-if project_id:
-    st.caption(f"מזהה פרויקט פעיל: {project_id}")
+                st.error(f"שגיאה בתהליך: {e}")
