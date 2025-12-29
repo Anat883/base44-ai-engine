@@ -8,20 +8,20 @@ from io import BytesIO
 # 1. משיכת המפתח מה-Secrets
 try:
     gemini_key = st.secrets["GEMINI_KEY"]
-except:
+except Exception:
     st.error("⚠️ המפתח (GEMINI_KEY) חסר ב-Secrets של Streamlit!")
     st.stop()
 
-# 2. הגדרות עיצוב לימין לשמאל (RTL)
+# 2. הגדרות עיצוב לימין לשמאל (RTL) ותצוגת טבלאות
 st.markdown("""
     <style>
     .main { direction: rtl; text-align: right; }
     div[data-testid="stBlock"] { direction: rtl; text-align: right; }
     div[data-testid="stMarkdownContainer"] { text-align: right; direction: rtl; }
     .stButton>button { width: 100%; border-radius: 5px; background-color: #f0f2f6; }
-    table { direction: rtl; margin-left: auto; margin-right: 0; width: 100%; }
-    th { text-align: right !important; }
-    td { text-align: right !important; }
+    table { direction: rtl; margin-left: auto; margin-right: 0; width: 100%; border-collapse: collapse; }
+    th { text-align: right !important; background-color: #f0f2f6; padding: 10px; }
+    td { text-align: right !important; padding: 10px; border-bottom: 1px solid #ddd; }
     </style>
     """, unsafe_allow_html=True)
 
@@ -33,7 +33,7 @@ if 'corrections' not in st.session_state:
 
 with st.sidebar:
     st.header("🧠 זיכרון למידה")
-    user_input = st.text_area("הנחיה לתיקון (למשל: 'הריבוע הוא שקע מוגן מים'):")
+    user_input = st.text_area("הנחיה לתיקון (למשל: 'הריבוע עם ה-X הוא שקע כוח'):")
     if st.button("הוסף הנחיה"):
         if user_input:
             st.session_state.corrections.append(user_input)
@@ -48,9 +48,6 @@ with st.sidebar:
             st.rerun()
 
 # 4. העלאת קבצים
-plan_file = st.file_uploader("העלי תוכנית PDF", type=["pdf", "png", "jpg"])
+plan_file = st.file_uploader("העלי תוכנית PDF (חשמל או אינסטלציה)", type=["pdf", "png", "jpg", "jpeg"])
 
-if plan_file and st.button("הפעל ניתוח"):
-    with st.spinner("ADCO מנתחת את הסמלים בתוכנית..."):
-        try:
-            base64_pdf = base64.b64encode(plan_file.
+if plan_file
