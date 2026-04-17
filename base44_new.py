@@ -46,7 +46,13 @@ with st.sidebar:
     if st.session_state.corrections:
         st.write("---")
         for i, c in enumerate(st.session_state.corrections):
-            st.info(f"{i+1}. {c}")
+            col_text, col_btn = st.columns([4, 1])
+            with col_text:
+                st.info(f"{i+1}. {c}")
+            with col_btn:
+                if st.button("🗑️", key=f"del_{i}", help="הסר הנחיה"):
+                    st.session_state.corrections.pop(i)
+                    st.rerun()
         if st.button("נקה זיכרון"):
             st.session_state.corrections = []
             st.session_state.analysis_results = None
