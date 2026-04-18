@@ -3,7 +3,11 @@ import requests
 import base64
 import json
 import pandas as pd
+import time
+import tempfile
+import os
 from io import BytesIO
+import google.generativeai as genai
 
 # 1. הגדרות וסודות
 try:
@@ -46,7 +50,13 @@ with st.sidebar:
     if st.session_state.corrections:
         st.write("---")
         for i, c in enumerate(st.session_state.corrections):
-            st.info(f"{i+1}. {c}")
+            col_text, col_btn = st.columns([4, 1])
+            with col_text:
+                st.info(f"{i+1}. {c}")
+            with col_btn:
+                if st.button("🗑️", key=f"del_{i}", help="הסר הנחיה"):
+                    st.session_state.corrections.pop(i)
+                    st.rerun()
         if st.button("נקה זיכרון"):
             st.session_state.corrections = []
             st.session_state.analysis_results = None
@@ -137,3 +147,99 @@ if st.session_state.analysis_results:
         file_name=f"ADCO_Estimate_{plan_file.name}.xlsx",
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
+
+# 7. ניתוח רגשות בווידאו
+st.write("---")
+st.header("🎬 ניתוח רגשות בווידאו לעריכה")
+
+video_file = st.file_uploader("העלי קובץ וידאו לניתוח רגשות", type=["mp4", "mov", "avi", "mkv", "webm"])
+
+if video_file:
+    if st.button("🎭 נתח רגשות בווידאו"):
+        with st.spinner("מעלה ומנתח את הווידאו... (עשוי לקחת מספר שניות)"):
+            uploaded_gemini_file = None
+            tmp_path = None
+            try:
+                genai.configure(api_key=gemini_key)
+
+                with tempfile.NamedTemporaryFile(delete=False, suffix=os.path.splitext(video_file.name)[1]) as tmp:
+                    tmp.write(video_file.read())
+                    tmp_path = tmp.name
+
+                uploaded_gemini_file = genai.upload_file(tmp_path, mime_type=video_file.type)
+
+                while uploaded_gemini_file.state.name == "PROCESSING":
+                    time.sleep(2)
+                    uploaded_gemini_file = genai.get_file(uploaded_gemini_file.name)
+
+                if uploaded_gemini_file.state.name == "FAILED":
+                    st.error("עיבוד הווידאו נכשל. נסי קובץ אחר.")
+                else:
+                    model = genai.GenerativeModel("gemini-2.0-flash")
+                    prompt = """
+                    Analyze this video for emotions and provide video editing suggestions.
+                    Identify the emotional content across different segments.
+
+                    Return ONLY valid JSON in this exact structure:
+                    {
+                      "overall_mood": "description of the overall emotional tone",
+                      "segments": [
+                        {
+                          "timestamp": "00:00-00:10",
+                          "emotion": "happiness/sadness/excitement/calm/anger/surprise/fear/neutral",
+                          "intensity": "low/medium/high",
+                          "edit_suggestion": "specific editing suggestion for this segment"
+                        }
+                      ],
+                      "editing_recommendations": [
+                        "general recommendation 1",
+                        "general recommendation 2"
+                      ],
+                      "music_suggestion": "suggested music style or mood"
+                    }
+                    """
+                    response = model.generate_content(
+                        [uploaded_gemini_file, prompt],
+                        generation_config=genai.GenerationConfig(temperature=0.1, response_mime_type="application/json")
+                    )
+
+                    result = json.loads(response.text)
+
+                    st.success(f"🎭 מצב רוח כללי: **{result.get('overall_mood', '')}**")
+
+                    if result.get('music_suggestion'):
+                        st.info(f"🎵 הצעת מוזיקה: {result['music_suggestion']}")
+
+                    if result.get('segments'):
+                        st.subheader("ניתוח לפי קטעים:")
+                        emotion_map = {
+                            "happiness": "😊", "sadness": "😢", "excitement": "🤩",
+                            "calm": "😌", "anger": "😠", "surprise": "😲",
+                            "fear": "😨", "neutral": "😐"
+                        }
+                        segments_display = []
+                        for seg in result['segments']:
+                            emoji = emotion_map.get(seg.get('emotion', '').lower(), "🎬")
+                            segments_display.append({
+                                "זמן": seg.get('timestamp', ''),
+                                "רגש": f"{emoji} {seg.get('emotion', '')}",
+                                "עוצמה": seg.get('intensity', ''),
+                                "המלצת עריכה": seg.get('edit_suggestion', '')
+                            })
+                        st.table(pd.DataFrame(segments_display))
+
+                    if result.get('editing_recommendations'):
+                        st.subheader("המלצות עריכה כלליות:")
+                        for rec in result['editing_recommendations']:
+                            st.info(f"✂️ {rec}")
+
+            except Exception as e:
+                st.error(f"שגיאה בניתוח הווידאו: {e}")
+            finally:
+                if tmp_path and os.path.exists(tmp_path):
+                    os.unlink(tmp_path)
+                if uploaded_gemini_file:
+                    try:
+                        genai.delete_file(uploaded_gemini_file.name)
+                    except Exception:
+                        pass
