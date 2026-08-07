@@ -1,0 +1,90 @@
+import { CURRENT_SAVE_VERSION, type GameState } from '@/types/save';
+import { CHARACTERS, ROOMS } from '@/data';
+import { SHOP_BUILDING_ID, SHOP_CHARACTER_POSITIONS } from '@/features/wardrobe/shopDefaults';
+
+const HOME_BUILDING_ID = 'home_house_01';
+const HOME_ROOM_ID = 'house_living_room_01';
+
+/** Which starter characters begin visibly placed in the house, and where. */
+const HOUSE_CHARACTER_POSITIONS: Record<string, { x: number; y: number }> = {
+  small_child_01: { x: 300, y: 380 },
+  mother_01: { x: 460, y: 360 },
+  baby_01: { x: 560, y: 420 },
+  grandmother_01: { x: 200, y: 430 },
+};
+
+export function createDefaultGameState(playerId: string): GameState {
+  const now = new Date().toISOString();
+
+  const characters: GameState['characters'] = {};
+  for (const character of CHARACTERS) {
+    const housePosition = HOUSE_CHARACTER_POSITIONS[character.id];
+    const shopPosition = SHOP_CHARACTER_POSITIONS[character.id];
+    const buildingId = housePosition ? HOME_BUILDING_ID : shopPosition ? SHOP_BUILDING_ID : '';
+    const position = housePosition ?? shopPosition ?? { x: 0, y: 0 };
+    characters[character.id] = {
+      characterId: character.id,
+      buildingId,
+      position,
+      outfitState: {
+        outfitId: character.defaultOutfitId,
+        hairId: character.defaultHairId,
+        hairColor: '',
+        glassesId: null,
+        earringsId: null,
+        hairAccessoryId: null,
+        faceAccessoryId: null,
+        heldItemId: null,
+      },
+    };
+  }
+
+  const room = ROOMS.find((r) => r.id === HOME_ROOM_ID);
+  const furnitureLayout = room?.defaultLayout.filter((item) => item.itemType === 'furniture') ?? [];
+
+  return {
+    saveVersion: CURRENT_SAVE_VERSION,
+    playerId,
+    characters,
+    pets: {
+      dog_01: {
+        petId: 'dog_01',
+        buildingId: HOME_BUILDING_ID,
+        position: { x: 200, y: 520 },
+        carriedByCharacterId: null,
+      },
+      cat_01: {
+        petId: 'cat_01',
+        buildingId: HOME_BUILDING_ID,
+        position: { x: 720, y: 500 },
+        carriedByCharacterId: null,
+      },
+    },
+    editableHouse: {
+      buildingId: HOME_BUILDING_ID,
+      furniture: furnitureLayout.map((item) => ({
+        instanceId: `${item.itemId}__default`,
+        furnitureId: item.itemId,
+        buildingId: HOME_BUILDING_ID,
+        roomId: HOME_ROOM_ID,
+        position: { x: item.x, y: item.y },
+        rotation: item.rotation ?? 0,
+      })),
+      hasCustomLayout: false,
+    },
+    shop: {
+      dressingBoothCharacterId: null,
+      dressingBoothState: 'EMPTY',
+      dressingBoothSelectedOutfitId: null,
+    },
+    gifts: {
+      lastGiftDate: null,
+      pendingGiftId: null,
+      pendingGiftInstanceId: null,
+      isOpened: false,
+      storage: [],
+    },
+    unlockedContent: [],
+    updatedAt: now,
+  };
+}
