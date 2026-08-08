@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { BUILDINGS } from '@/data';
 import { ensureBaseShapeTextures } from '@/game/loaders/shapeTextures';
+import { preloadCharacterArt } from '@/game/loaders/characterArt';
 import { buildingVisual } from '@/game/loaders/entityVisuals';
 import { colorToNumber } from '@/lib/color';
 import { EventBus } from '@/game/EventBus';
@@ -13,6 +14,10 @@ export const GAME_HEIGHT = 800;
 export class CityMapScene extends Phaser.Scene {
   constructor() {
     super('CityMap');
+  }
+
+  preload(): void {
+    preloadCharacterArt(this);
   }
 
   create(): void {

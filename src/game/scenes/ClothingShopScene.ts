@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { ensureBaseShapeTextures, SHAPE } from '@/game/loaders/shapeTextures';
+import { preloadCharacterArt } from '@/game/loaders/characterArt';
 import { charactersById } from '@/data';
 import { CharacterView } from '@/game/entities/CharacterView';
 import { makeDraggable } from '@/game/systems/DragSystem';
@@ -24,6 +25,10 @@ export class ClothingShopScene extends Phaser.Scene {
 
   constructor() {
     super('ClothingShop');
+  }
+
+  preload(): void {
+    preloadCharacterArt(this);
   }
 
   create(): void {
