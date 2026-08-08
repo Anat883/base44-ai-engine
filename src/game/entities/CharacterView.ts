@@ -21,7 +21,10 @@ const LAYER_SIZE = {
   outfitDress: 92,
   outfitTrim: 50,
   hairShort: 66,
-  hairLong: 70,
+  // hair-long stays on the procedural shape (see shapeImages.ts), whose
+  // canvas proportions differ from the illustrated layers above, so this
+  // is tuned against that shape rather than hair-long.png.
+  hairLong: 66,
   glasses: 40,
   earring: 12,
   hairBow: 32,
@@ -33,7 +36,7 @@ const OUTFIT_SHIRT_Y = -34;
 const OUTFIT_DRESS_Y = -20;
 const TRIM_Y = -8;
 const HAIR_SHORT_Y = HEAD_Y - 6;
-const HAIR_LONG_Y = HEAD_Y + 2;
+const HAIR_LONG_Y = HEAD_Y + 9; // top-aligned with hair-short's crown; the procedural shape is taller, so it drapes further down from there
 const GLASSES_Y = HEAD_Y + 2;
 const EARRING_Y = HEAD_Y + 8;
 const EARRING_X = 22;
