@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { ensureBaseShapeTextures, SHAPE } from '@/game/loaders/shapeTextures';
+import { preloadShapeImages } from '@/game/loaders/shapeImages';
 import { giftsById, holdableItemsById, outfitsById, accessoriesById } from '@/data';
 import { giftVisual } from '@/game/loaders/entityVisuals';
 import { colorToNumber } from '@/lib/color';
@@ -36,6 +37,10 @@ export class GiftAreaScene extends Phaser.Scene {
 
   constructor() {
     super('GiftArea');
+  }
+
+  preload(): void {
+    preloadShapeImages(this);
   }
 
   create(): void {

@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { ensureBaseShapeTextures } from '@/game/loaders/shapeTextures';
+import { preloadShapeImages } from '@/game/loaders/shapeImages';
 import { charactersById, furnitureById, petsById } from '@/data';
 import { CharacterView } from '@/game/entities/CharacterView';
 import { PetView } from '@/game/entities/PetView';
@@ -22,6 +23,10 @@ export class HouseScene extends Phaser.Scene {
 
   constructor() {
     super('House');
+  }
+
+  preload(): void {
+    preloadShapeImages(this);
   }
 
   create(): void {
