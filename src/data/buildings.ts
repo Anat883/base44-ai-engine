@@ -157,13 +157,16 @@ export const ROOMS: RoomEntity[] = [
     isDefault: true,
     isCollectible: false,
     isMovable: false,
+    // y-values are shifted +240 from the old placeholder floor split (y >= 220
+    // was "floor") to sit on the illustrated living-room background's actual
+    // floor line, which starts around y = 590 on the 1280x800 canvas.
     defaultLayout: [
-      { itemId: 'sofa_01', itemType: 'furniture', x: 260, y: 420 },
-      { itemId: 'table_01', itemType: 'furniture', x: 520, y: 440 },
-      { itemId: 'chair_blue_01', itemType: 'furniture', x: 640, y: 460 },
-      { itemId: 'chair_pink_01', itemType: 'furniture', x: 420, y: 480 },
-      { itemId: 'dog_01', itemType: 'pet', x: 200, y: 520 },
-      { itemId: 'cat_01', itemType: 'pet', x: 720, y: 500 },
+      { itemId: 'sofa_01', itemType: 'furniture', x: 260, y: 660 },
+      { itemId: 'table_01', itemType: 'furniture', x: 520, y: 680 },
+      { itemId: 'chair_blue_01', itemType: 'furniture', x: 640, y: 700 },
+      { itemId: 'chair_pink_01', itemType: 'furniture', x: 420, y: 720 },
+      { itemId: 'dog_01', itemType: 'pet', x: 200, y: 760 },
+      { itemId: 'cat_01', itemType: 'pet', x: 720, y: 740 },
     ],
   }),
   room({

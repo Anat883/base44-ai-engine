@@ -5,12 +5,17 @@ import { SHOP_BUILDING_ID, SHOP_CHARACTER_POSITIONS } from '@/features/wardrobe/
 const HOME_BUILDING_ID = 'home_house_01';
 const HOME_ROOM_ID = 'house_living_room_01';
 
-/** Which starter characters begin visibly placed in the house, and where. */
+/**
+ * Which starter characters begin visibly placed in the house, and where.
+ * y-values sit on the illustrated living-room background's floor line
+ * (~y=590 on the 1280x800 canvas), shifted +240 from the old placeholder
+ * floor split.
+ */
 const HOUSE_CHARACTER_POSITIONS: Record<string, { x: number; y: number }> = {
-  small_child_01: { x: 300, y: 380 },
-  mother_01: { x: 460, y: 360 },
-  baby_01: { x: 560, y: 420 },
-  grandmother_01: { x: 200, y: 430 },
+  small_child_01: { x: 300, y: 620 },
+  mother_01: { x: 460, y: 600 },
+  baby_01: { x: 560, y: 660 },
+  grandmother_01: { x: 200, y: 670 },
 };
 
 export function createDefaultGameState(playerId: string): GameState {
@@ -50,13 +55,13 @@ export function createDefaultGameState(playerId: string): GameState {
       dog_01: {
         petId: 'dog_01',
         buildingId: HOME_BUILDING_ID,
-        position: { x: 200, y: 520 },
+        position: { x: 200, y: 760 },
         carriedByCharacterId: null,
       },
       cat_01: {
         petId: 'cat_01',
         buildingId: HOME_BUILDING_ID,
-        position: { x: 720, y: 500 },
+        position: { x: 720, y: 740 },
         carriedByCharacterId: null,
       },
     },

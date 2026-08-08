@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { ensureBaseShapeTextures } from '@/game/loaders/shapeTextures';
 import { preloadShapeImages } from '@/game/loaders/shapeImages';
+import livingRoomBgUrl from '@/assets/rooms/living-room.png';
 import { charactersById, furnitureById, petsById } from '@/data';
 import { CharacterView } from '@/game/entities/CharacterView';
 import { PetView } from '@/game/entities/PetView';
@@ -8,11 +9,12 @@ import { FurnitureView } from '@/game/entities/FurnitureView';
 import { makeDraggable } from '@/game/systems/DragSystem';
 import { EventBus } from '@/game/EventBus';
 import { useGameStore } from '@/store/gameStore';
-import { colorToNumber } from '@/lib/color';
 import { GAME_HEIGHT, GAME_WIDTH } from './CityMapScene';
 
 const HOME_BUILDING_ID = 'home_house_01';
-const FLOOR_TOP = 220;
+// Matches the illustrated living-room background's floor line (~y=590 on the
+// 1280x800 canvas) rather than the old placeholder floor-color split.
+const FLOOR_TOP = 630;
 
 export class HouseScene extends Phaser.Scene {
   private characterViews = new Map<string, CharacterView>();
@@ -27,6 +29,7 @@ export class HouseScene extends Phaser.Scene {
 
   preload(): void {
     preloadShapeImages(this);
+    this.load.image('bg_house', livingRoomBgUrl);
   }
 
   create(): void {
@@ -34,18 +37,7 @@ export class HouseScene extends Phaser.Scene {
     ensureBaseShapeTextures(this);
     this.cameras.main.setBackgroundColor('#F3EEFF');
 
-    this.add
-      .rectangle(GAME_WIDTH / 2, FLOOR_TOP / 2, GAME_WIDTH, FLOOR_TOP, colorToNumber('#FFE7A0'))
-      .setAlpha(0.5);
-    this.add
-      .rectangle(
-        GAME_WIDTH / 2,
-        FLOOR_TOP + (GAME_HEIGHT - FLOOR_TOP) / 2,
-        GAME_WIDTH,
-        GAME_HEIGHT - FLOOR_TOP,
-        colorToNumber('#E4D9FF'),
-      )
-      .setAlpha(0.5);
+    this.add.image(GAME_WIDTH / 2, GAME_HEIGHT / 2, 'bg_house').setDisplaySize(GAME_WIDTH, GAME_HEIGHT);
 
     const bounds = {
       minX: 40,

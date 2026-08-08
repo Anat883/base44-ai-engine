@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { ensureBaseShapeTextures, SHAPE } from '@/game/loaders/shapeTextures';
 import { preloadShapeImages } from '@/game/loaders/shapeImages';
+import clothingShopBgUrl from '@/assets/rooms/clothing-shop.png';
 import { charactersById } from '@/data';
 import { CharacterView } from '@/game/entities/CharacterView';
 import { makeDraggable } from '@/game/systems/DragSystem';
@@ -29,6 +30,7 @@ export class ClothingShopScene extends Phaser.Scene {
 
   preload(): void {
     preloadShapeImages(this);
+    this.load.image('bg_clothingShop', clothingShopBgUrl);
   }
 
   create(): void {
@@ -37,12 +39,8 @@ export class ClothingShopScene extends Phaser.Scene {
     this.cameras.main.setBackgroundColor('#F7F0FF');
     this.lastHandledBoothState = null;
 
-    this.add
-      .rectangle(GAME_WIDTH / 2, GAME_HEIGHT / 2, GAME_WIDTH, GAME_HEIGHT, colorToNumber('#F3EEFF'))
-      .setAlpha(0.4);
+    this.add.image(GAME_WIDTH / 2, GAME_HEIGHT / 2, 'bg_clothingShop').setDisplaySize(GAME_WIDTH, GAME_HEIGHT);
 
-    // Wardrobe rack backdrop (visual only - the interactive wardrobe grid is a React overlay).
-    this.add.image(220, 200, SHAPE.rack).setDisplaySize(320, 160).setTint(colorToNumber('#B98CFF'));
     this.add
       .text(220, 130, 'Wardrobe', {
         fontFamily: 'Nunito, sans-serif',
@@ -51,11 +49,11 @@ export class ClothingShopScene extends Phaser.Scene {
       })
       .setOrigin(0.5);
 
-    // Booth backdrop.
+    // Booth backdrop - a semi-transparent drop-zone indicator over the illustrated dressing nook.
     const boothCx = BOOTH_ZONE.centerX;
     const boothCy = BOOTH_ZONE.centerY;
     this.add
-      .rectangle(boothCx, boothCy, BOOTH_ZONE.width, BOOTH_ZONE.height, colorToNumber('#FFD9EE'))
+      .rectangle(boothCx, boothCy, BOOTH_ZONE.width, BOOTH_ZONE.height, colorToNumber('#FFD9EE'), 0.35)
       .setStrokeStyle(4, colorToNumber('#FF8FD1'));
     this.add
       .text(boothCx, BOOTH_ZONE.y - 24, 'Dressing Booth', {
