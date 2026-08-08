@@ -3,7 +3,7 @@ import { ensureBaseShapeTextures } from '@/game/loaders/shapeTextures';
 import { preloadShapeImages } from '@/game/loaders/shapeImages';
 import livingRoomBgUrl from '@/assets/rooms/living-room.png';
 import { charactersById, furnitureById, petsById } from '@/data';
-import { CharacterView } from '@/game/entities/CharacterView';
+import { CHARACTER_HITBOX, CharacterView } from '@/game/entities/CharacterView';
 import { PetView } from '@/game/entities/PetView';
 import { FurnitureView } from '@/game/entities/FurnitureView';
 import { makeDraggable } from '@/game/systems/DragSystem';
@@ -53,6 +53,7 @@ export class HouseScene extends Phaser.Scene {
       if (!furniture) continue;
       const instanceId = item.instanceId;
       const view = new FurnitureView(this, item.position.x, item.position.y, furniture, instanceId);
+      view.setDepth(item.position.y);
       makeDraggable(view, furniture.footprint, bounds, {
         onDragStart: () => this.draggingIds.add(instanceId),
         onDragEnd: (x, y) => {
@@ -68,6 +69,7 @@ export class HouseScene extends Phaser.Scene {
       const entity = petsById.get(petId);
       if (!entity) continue;
       const view = new PetView(this, pet.position.x, pet.position.y, entity);
+      view.setDepth(pet.position.y);
       makeDraggable(view, { width: 84, height: 56 }, bounds, {
         onDragStart: () => this.draggingIds.add(petId),
         onDragEnd: (x, y) => {
@@ -84,7 +86,8 @@ export class HouseScene extends Phaser.Scene {
       if (!entity) continue;
       const view = new CharacterView(this, character.position.x, character.position.y, entity);
       view.applyOutfitState(character.outfitState);
-      makeDraggable(view, { width: 90, height: 150 }, bounds, {
+      view.setDepth(character.position.y);
+      makeDraggable(view, CHARACTER_HITBOX, bounds, {
         onDragStart: () => this.draggingIds.add(characterId),
         onDragEnd: (x, y) => {
           this.draggingIds.delete(characterId);
@@ -103,7 +106,8 @@ export class HouseScene extends Phaser.Scene {
     for (const [instanceId, view] of this.furnitureViews) {
       if (this.draggingIds.has(instanceId)) continue;
       const saved = state.editableHouse.furniture.find((f) => f.instanceId === instanceId);
-      if (saved && (view.x !== saved.position.x || view.y !== saved.position.y)) {
+      if (!saved) continue;
+      if (view.x !== saved.position.x || view.y !== saved.position.y) {
         this.tweens.add({
           targets: view,
           x: saved.position.x,
@@ -112,11 +116,13 @@ export class HouseScene extends Phaser.Scene {
           ease: 'Sine.Out',
         });
       }
+      view.setDepth(saved.position.y);
     }
     for (const [petId, view] of this.petViews) {
       if (this.draggingIds.has(petId)) continue;
       const saved = state.pets[petId];
-      if (saved && (view.x !== saved.position.x || view.y !== saved.position.y)) {
+      if (!saved) continue;
+      if (view.x !== saved.position.x || view.y !== saved.position.y) {
         this.tweens.add({
           targets: view,
           x: saved.position.x,
@@ -125,6 +131,7 @@ export class HouseScene extends Phaser.Scene {
           ease: 'Sine.Out',
         });
       }
+      view.setDepth(saved.position.y);
     }
     for (const [characterId, view] of this.characterViews) {
       if (this.draggingIds.has(characterId)) continue;
@@ -139,6 +146,7 @@ export class HouseScene extends Phaser.Scene {
           ease: 'Sine.Out',
         });
       }
+      view.setDepth(saved.position.y);
       view.applyOutfitState(saved.outfitState);
     }
   }

@@ -9,13 +9,14 @@ const HOME_ROOM_ID = 'house_living_room_01';
  * Which starter characters begin visibly placed in the house, and where.
  * y-values sit on the illustrated living-room background's floor line
  * (~y=590 on the 1280x800 canvas), shifted +240 from the old placeholder
- * floor split.
+ * floor split. x-values are spaced ~300px apart so the now-larger
+ * (CharacterView SCALE = 1.7) dolls, at ~210px wide, don't overlap.
  */
 const HOUSE_CHARACTER_POSITIONS: Record<string, { x: number; y: number }> = {
-  small_child_01: { x: 300, y: 620 },
-  mother_01: { x: 460, y: 600 },
-  baby_01: { x: 560, y: 660 },
-  grandmother_01: { x: 200, y: 670 },
+  grandmother_01: { x: 150, y: 670 },
+  small_child_01: { x: 450, y: 620 },
+  mother_01: { x: 750, y: 600 },
+  baby_01: { x: 1050, y: 660 },
 };
 
 export function createDefaultGameState(playerId: string): GameState {

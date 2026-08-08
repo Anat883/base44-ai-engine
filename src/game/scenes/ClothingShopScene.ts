@@ -3,7 +3,7 @@ import { ensureBaseShapeTextures, SHAPE } from '@/game/loaders/shapeTextures';
 import { preloadShapeImages } from '@/game/loaders/shapeImages';
 import clothingShopBgUrl from '@/assets/rooms/clothing-shop.png';
 import { charactersById } from '@/data';
-import { CharacterView } from '@/game/entities/CharacterView';
+import { CHARACTER_HITBOX, CharacterView } from '@/game/entities/CharacterView';
 import { makeDraggable } from '@/game/systems/DragSystem';
 import { EventBus } from '@/game/EventBus';
 import { useGameStore } from '@/store/gameStore';
@@ -90,7 +90,8 @@ export class ClothingShopScene extends Phaser.Scene {
       if (!entity) continue;
       const view = new CharacterView(this, character.position.x, character.position.y, entity);
       view.applyOutfitState(character.outfitState);
-      makeDraggable(view, { width: 90, height: 150 }, bounds, {
+      view.setDepth(character.position.y);
+      makeDraggable(view, CHARACTER_HITBOX, bounds, {
         onDragStart: () => this.draggingIds.add(characterId),
         onDragEnd: (x, y) => {
           this.draggingIds.delete(characterId);
@@ -126,6 +127,7 @@ export class ClothingShopScene extends Phaser.Scene {
           ease: 'Sine.Out',
         });
       }
+      view.setDepth(saved.position.y);
       view.applyOutfitState(saved.outfitState);
     }
 

@@ -13,36 +13,44 @@ import { colorToNumber } from '@/lib/color';
 
 const SPARKLE_ACCENTS = ['#FF5C7A', '#FFD34D', '#4DB8FF'];
 
+// Scales the whole doll up from the original tuning so it reads at a size
+// that matches the illustrated room backgrounds (furniture, windows, etc.)
+// instead of looking like a small icon dropped into a life-sized room.
+const SCALE = 1.7;
+
 /** Target on-screen sizes for the illustrated shape layers (uniform scale, aspect preserved). */
 const LAYER_SIZE = {
-  head: 60,
-  body: 108, // full standing figure (torso+arms+legs); this one is a target HEIGHT, not width
-  outfitShirt: 90,
-  outfitDress: 92,
-  outfitTrim: 50,
-  hairShort: 66,
+  head: 60 * SCALE,
+  body: 108 * SCALE, // full standing figure (torso+arms+legs); this one is a target HEIGHT, not width
+  outfitShirt: 90 * SCALE,
+  outfitDress: 92 * SCALE,
+  outfitTrim: 50 * SCALE,
+  hairShort: 66 * SCALE,
   // hair-long stays on the procedural shape (see shapeImages.ts), whose
   // canvas proportions differ from the illustrated layers above, so this
   // is tuned against that shape rather than hair-long.png.
-  hairLong: 66,
-  glasses: 40,
-  earring: 12,
-  hairBow: 32,
+  hairLong: 66 * SCALE,
+  glasses: 40 * SCALE,
+  earring: 12 * SCALE,
+  hairBow: 32 * SCALE,
 };
 
-const BODY_Y = -6;
-const HEAD_Y = -85;
-const OUTFIT_SHIRT_Y = -34;
-const OUTFIT_DRESS_Y = -20;
-const TRIM_Y = -8;
-const HAIR_SHORT_Y = HEAD_Y - 6;
-const HAIR_LONG_Y = HEAD_Y + 9; // top-aligned with hair-short's crown; the procedural shape is taller, so it drapes further down from there
-const GLASSES_Y = HEAD_Y + 2;
-const EARRING_Y = HEAD_Y + 8;
-const EARRING_X = 22;
-const HAIR_ACCESSORY_Y = HEAD_Y - 24;
-const HAIR_ACCESSORY_X = 12;
-const HELD_ITEM_X = 60;
+const BODY_Y = -6 * SCALE;
+const HEAD_Y = -85 * SCALE;
+const OUTFIT_SHIRT_Y = -34 * SCALE;
+const OUTFIT_DRESS_Y = -20 * SCALE;
+const TRIM_Y = -8 * SCALE;
+const HAIR_SHORT_Y = HEAD_Y - 6 * SCALE;
+const HAIR_LONG_Y = HEAD_Y + 9 * SCALE; // top-aligned with hair-short's crown; the procedural shape is taller, so it drapes further down from there
+const GLASSES_Y = HEAD_Y + 2 * SCALE;
+const EARRING_Y = HEAD_Y + 8 * SCALE;
+const EARRING_X = 22 * SCALE;
+const HAIR_ACCESSORY_Y = HEAD_Y - 24 * SCALE;
+const HAIR_ACCESSORY_X = 12 * SCALE;
+const HELD_ITEM_X = 60 * SCALE;
+
+/** The Container's logical size and drag hitbox - scenes should use this instead of hardcoding it. */
+export const CHARACTER_HITBOX = { width: 90 * SCALE, height: 150 * SCALE };
 
 /** Uniformly scales `image` so its display width matches `targetWidth`, preserving aspect ratio. */
 function fitWidth(image: Phaser.GameObjects.Image, targetWidth: number): void {
@@ -96,7 +104,7 @@ export class CharacterView extends Phaser.GameObjects.Container {
     fitWidth(this.hair, LAYER_SIZE.hairShort);
     this.sparkles = SPARKLE_ACCENTS.map((color, i) =>
       scene.add
-        .image(-14 + i * 14, HEAD_Y - 26, SHAPE.sparkle)
+        .image((-14 + i * 14) * SCALE, HEAD_Y - 26 * SCALE, SHAPE.sparkle)
         .setTint(colorToNumber(color))
         .setVisible(false),
     );
@@ -129,7 +137,7 @@ export class CharacterView extends Phaser.GameObjects.Container {
       this.heldItem,
     ]);
 
-    this.setSize(90, 150);
+    this.setSize(CHARACTER_HITBOX.width, CHARACTER_HITBOX.height);
     scene.add.existing(this);
   }
 
