@@ -18,6 +18,7 @@ const HAIR_COLOR_HEX: Record<HairEntity['color'], string> = {
   brown: '#8A5A3B',
   blonde: '#F2D06B',
   black: '#3A2E4D',
+  gray: '#D9D9E0',
 };
 
 export function outfitVisual(outfit: OutfitEntity): {

@@ -75,7 +75,7 @@ export interface OutfitEntity extends BaseEntity {
   fitsArchetypes: CharacterArchetype[];
 }
 
-export type HairColor = 'rainbow' | 'pink' | 'purple' | 'blue' | 'brown' | 'blonde' | 'black';
+export type HairColor = 'rainbow' | 'pink' | 'purple' | 'blue' | 'brown' | 'blonde' | 'black' | 'gray';
 
 export interface HairEntity extends BaseEntity {
   type: 'hair';

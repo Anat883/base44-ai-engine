@@ -162,6 +162,7 @@ function HairGrid({
     brown: '#8A5A3B',
     blonde: '#F2D06B',
     black: '#3A2E4D',
+    gray: '#D9D9E0',
   };
   return (
     <div className="grid grid-cols-3 gap-3">
