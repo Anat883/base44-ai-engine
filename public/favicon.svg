@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Doll City">
+  <rect x="0" y="0" width="64" height="64" rx="16" fill="#B98CFF" />
+  <ellipse cx="32" cy="46" rx="15" ry="11" fill="#FF8FD1" />
+  <path d="M12 30 C12 12 52 12 52 30 C52 20 44 14 32 14 C20 14 12 20 12 30 Z" fill="#3A2E4D" />
+  <circle cx="32" cy="32" r="15" fill="#F2C29A" />
+  <circle cx="26" cy="31" r="2.4" fill="#3A2E4D" />
+  <circle cx="38" cy="31" r="2.4" fill="#3A2E4D" />
+  <path d="M25 38 Q32 44 39 38" stroke="#3A2E4D" stroke-width="2.4" fill="none" stroke-linecap="round" />
+  <circle cx="14" cy="20" r="3" fill="#FF5C7A" />
+  <circle cx="50" cy="20" r="3" fill="#FFD34D" />
+  <circle cx="32" cy="10" r="3" fill="#4DB8FF" />
+</svg>

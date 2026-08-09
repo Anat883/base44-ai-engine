@@ -1,0 +1,78 @@
+import type { GiftEntity } from '@/types/entities';
+import { SEED_CREATED_AT } from './seedTimestamp';
+
+function gift(partial: Omit<GiftEntity, 'type' | 'createdAt'>): GiftEntity {
+  return { type: 'gift', createdAt: SEED_CREATED_AT, ...partial };
+}
+
+/** Configurable daily-gift pool. Not every gift appears every day - see features/gifts. */
+export const GIFTS: GiftEntity[] = [
+  gift({
+    id: 'cat_bag_01',
+    name: 'Cat Bag Gift',
+    assetKey: 'gift_cat_bag',
+    thumbnail: 'held_cat_bag',
+    tags: ['bag', 'cute'],
+    category: 'gift',
+    zIndex: 0,
+    interactionTypes: ['open'],
+    isDefault: false,
+    isCollectible: true,
+    isMovable: false,
+    contentsItemId: 'cat_bag_01',
+    contentsItemType: 'holdableItem',
+    poolWeight: 3,
+    wrapColor: '#FF8FD1',
+  }),
+  gift({
+    id: 'panda_bag_01',
+    name: 'Panda Bag Gift',
+    assetKey: 'gift_panda_bag',
+    thumbnail: 'held_panda_bag',
+    tags: ['bag', 'cute'],
+    category: 'gift',
+    zIndex: 0,
+    interactionTypes: ['open'],
+    isDefault: false,
+    isCollectible: true,
+    isMovable: false,
+    contentsItemId: 'panda_bag_01',
+    contentsItemType: 'holdableItem',
+    poolWeight: 3,
+    wrapColor: '#B98CFF',
+  }),
+  gift({
+    id: 'gift_sweater_01',
+    name: 'Cozy Sweater Gift',
+    assetKey: 'gift_sweater',
+    thumbnail: 'outfit_sweater',
+    tags: ['clothing'],
+    category: 'gift',
+    zIndex: 0,
+    interactionTypes: ['open'],
+    isDefault: false,
+    isCollectible: true,
+    isMovable: false,
+    contentsItemId: 'sweater_01',
+    contentsItemType: 'outfit',
+    poolWeight: 2,
+    wrapColor: '#5BD98A',
+  }),
+  gift({
+    id: 'gift_crown_01',
+    name: 'Little Crown Gift',
+    assetKey: 'gift_crown',
+    thumbnail: 'acc_crown',
+    tags: ['accessory', 'festive'],
+    category: 'gift',
+    zIndex: 0,
+    interactionTypes: ['open'],
+    isDefault: false,
+    isCollectible: true,
+    isMovable: false,
+    contentsItemId: 'crown_01',
+    contentsItemType: 'accessory',
+    poolWeight: 1,
+    wrapColor: '#FFD34D',
+  }),
+];
