@@ -13,44 +13,59 @@ import { colorToNumber } from '@/lib/color';
 
 const SPARKLE_ACCENTS = ['#FF5C7A', '#FFD34D', '#4DB8FF'];
 
-// Scales the whole doll up from the original tuning so it reads at a size
-// that matches the illustrated room backgrounds (furniture, windows, etc.)
-// instead of looking like a small icon dropped into a life-sized room.
-const SCALE = 1.7;
+/**
+ * Target on-screen sizes for the illustrated shape layers (uniform scale,
+ * aspect preserved via fitWidth/fitHeight below).
+ *
+ * These are derived from measuring each asset's actual alpha content after
+ * cropping out its transparent padding (assets were shipped with large
+ * uncropped margins - e.g. head.png had ~230px of empty space below the
+ * chin out of an 871px-tall canvas - which is what caused the previous
+ * tuning to render heads with a visible gap above the neckline: the old
+ * math assumed each image's content filled its full frame, which is what
+ * `fitWidth`/`fitHeight` actually scale against). With the padding cropped
+ * out, body/outfit-shirt/outfit-dress necklines share one top anchor
+ * (NECK_Y), head/hair-short share one crown-top anchor, and head/hair-short
+ * are additionally at the same native pixel scale (near-identical content
+ * height), which is why they use the same fitWidth scale factor below.
+ */
+const NECK_Y = -110; // top anchor shared by body, outfit-shirt and outfit-dress (their necklines)
 
-/** Target on-screen sizes for the illustrated shape layers (uniform scale, aspect preserved). */
 const LAYER_SIZE = {
-  head: 60 * SCALE,
-  body: 108 * SCALE, // full standing figure (torso+arms+legs); this one is a target HEIGHT, not width
-  outfitShirt: 90 * SCALE,
-  outfitDress: 92 * SCALE,
-  outfitTrim: 50 * SCALE,
-  hairShort: 66 * SCALE,
+  head: 108,
+  body: 190, // full standing figure (torso+arms+legs); this one is a target HEIGHT, not width
+  outfitShirt: 153,
+  outfitDress: 127,
+  outfitTrim: 130,
+  hairShort: 120,
   // hair-long stays on the procedural shape (see shapeImages.ts), whose
   // canvas proportions differ from the illustrated layers above, so this
   // is tuned against that shape rather than hair-long.png.
-  hairLong: 66 * SCALE,
-  glasses: 40 * SCALE,
-  earring: 12 * SCALE,
-  hairBow: 32 * SCALE,
+  hairLong: 120,
+  glasses: 78,
+  earring: 18,
+  hairBow: 54,
 };
 
-const BODY_Y = -6 * SCALE;
-const HEAD_Y = -85 * SCALE;
-const OUTFIT_SHIRT_Y = -34 * SCALE;
-const OUTFIT_DRESS_Y = -20 * SCALE;
-const TRIM_Y = -8 * SCALE;
-const HAIR_SHORT_Y = HEAD_Y - 6 * SCALE;
-const HAIR_LONG_Y = HEAD_Y + 9 * SCALE; // top-aligned with hair-short's crown; the procedural shape is taller, so it drapes further down from there
-const GLASSES_Y = HEAD_Y + 2 * SCALE;
-const EARRING_Y = HEAD_Y + 8 * SCALE;
-const EARRING_X = 22 * SCALE;
-const HAIR_ACCESSORY_Y = HEAD_Y - 24 * SCALE;
-const HAIR_ACCESSORY_X = 12 * SCALE;
-const HELD_ITEM_X = 60 * SCALE;
+const BODY_Y = NECK_Y + LAYER_SIZE.body / 2;
+const OUTFIT_SHIRT_Y = NECK_Y + LAYER_SIZE.outfitShirt / 2;
+const OUTFIT_DRESS_Y = BODY_Y; // outfit-dress is a full body+dress replacement, same anchor as body
+// head.png's content is 711x641 (fitWidth uses width, so its display height
+// isn't directly derivable from LAYER_SIZE.head without that aspect ratio);
+// -153 puts its bottom a few px past NECK_Y so the neckline doesn't gap.
+const HEAD_Y = -153;
+const TRIM_Y = 10;
+const HAIR_SHORT_Y = HEAD_Y; // same content height as head.png, so it shares its center once top-aligned
+const HAIR_LONG_Y = -123; // top-aligned with the head's crown; the procedural shape is taller, so it drapes further down from there
+const GLASSES_Y = HEAD_Y;
+const EARRING_Y = -145;
+const EARRING_X = 46;
+const HAIR_ACCESSORY_Y = -191;
+const HAIR_ACCESSORY_X = 30;
+const HELD_ITEM_X = 90;
 
 /** The Container's logical size and drag hitbox - scenes should use this instead of hardcoding it. */
-export const CHARACTER_HITBOX = { width: 90 * SCALE, height: 150 * SCALE };
+export const CHARACTER_HITBOX = { width: 170, height: 300 };
 
 /** Uniformly scales `image` so its display width matches `targetWidth`, preserving aspect ratio. */
 function fitWidth(image: Phaser.GameObjects.Image, targetWidth: number): void {
@@ -104,7 +119,7 @@ export class CharacterView extends Phaser.GameObjects.Container {
     fitWidth(this.hair, LAYER_SIZE.hairShort);
     this.sparkles = SPARKLE_ACCENTS.map((color, i) =>
       scene.add
-        .image((-14 + i * 14) * SCALE, HEAD_Y - 26 * SCALE, SHAPE.sparkle)
+        .image(-30 + i * 30, HAIR_ACCESSORY_Y - 15, SHAPE.sparkle)
         .setTint(colorToNumber(color))
         .setVisible(false),
     );
