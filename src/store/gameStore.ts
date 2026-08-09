@@ -18,8 +18,8 @@ import {
 import { SHOP_BUILDING_ID, SHOP_CHARACTER_POSITIONS } from '@/features/wardrobe/shopDefaults';
 
 const DEFAULT_PET_POSITIONS: Record<string, Vector2> = {
-  dog_01: { x: 200, y: 760 },
-  cat_01: { x: 720, y: 740 },
+  dog_01: { x: 130, y: 745 },
+  cat_01: { x: 1000, y: 715 },
 };
 
 interface GameStore {

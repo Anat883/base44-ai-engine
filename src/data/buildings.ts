@@ -157,16 +157,18 @@ export const ROOMS: RoomEntity[] = [
     isDefault: true,
     isCollectible: false,
     isMovable: false,
-    // y-values are shifted +240 from the old placeholder floor split (y >= 220
-    // was "floor") to sit on the illustrated living-room background's actual
-    // floor line, which starts around y = 590 on the 1280x800 canvas.
+    // y-values sit on the illustrated living-room background's actual floor
+    // line (~y=590 on the 1280x800 canvas), kept above the bottom Tidy
+    // Up/Reset Room button bar. x/y spread out further than a simple grid
+    // since the illustrated furniture (sofa/table/chair) is now much bigger
+    // than the old placeholder shapes.
     defaultLayout: [
-      { itemId: 'sofa_01', itemType: 'furniture', x: 260, y: 660 },
-      { itemId: 'table_01', itemType: 'furniture', x: 520, y: 680 },
-      { itemId: 'chair_blue_01', itemType: 'furniture', x: 640, y: 700 },
-      { itemId: 'chair_pink_01', itemType: 'furniture', x: 420, y: 720 },
-      { itemId: 'dog_01', itemType: 'pet', x: 200, y: 760 },
-      { itemId: 'cat_01', itemType: 'pet', x: 720, y: 740 },
+      { itemId: 'sofa_01', itemType: 'furniture', x: 200, y: 680 },
+      { itemId: 'table_01', itemType: 'furniture', x: 700, y: 690 },
+      { itemId: 'chair_blue_01', itemType: 'furniture', x: 600, y: 715 },
+      { itemId: 'chair_pink_01', itemType: 'furniture', x: 800, y: 715 },
+      { itemId: 'dog_01', itemType: 'pet', x: 130, y: 745 },
+      { itemId: 'cat_01', itemType: 'pet', x: 1000, y: 715 },
     ],
   }),
   room({

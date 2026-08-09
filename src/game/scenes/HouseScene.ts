@@ -4,7 +4,7 @@ import { preloadShapeImages } from '@/game/loaders/shapeImages';
 import livingRoomBgUrl from '@/assets/rooms/living-room.png';
 import { charactersById, furnitureById, petsById } from '@/data';
 import { CHARACTER_HITBOX, CharacterView } from '@/game/entities/CharacterView';
-import { PetView } from '@/game/entities/PetView';
+import { PET_HITBOX, PetView } from '@/game/entities/PetView';
 import { FurnitureView } from '@/game/entities/FurnitureView';
 import { makeDraggable } from '@/game/systems/DragSystem';
 import { EventBus } from '@/game/EventBus';
@@ -70,7 +70,7 @@ export class HouseScene extends Phaser.Scene {
       if (!entity) continue;
       const view = new PetView(this, pet.position.x, pet.position.y, entity);
       view.setDepth(pet.position.y);
-      makeDraggable(view, { width: 84, height: 56 }, bounds, {
+      makeDraggable(view, PET_HITBOX, bounds, {
         onDragStart: () => this.draggingIds.add(petId),
         onDragEnd: (x, y) => {
           this.draggingIds.delete(petId);

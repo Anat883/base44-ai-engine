@@ -27,6 +27,7 @@ export const SHAPE = {
   petEarRound: 'shape_pet_ear_round',
   petEarPointy: 'shape_pet_ear_pointy',
   softRect: 'shape_soft_rect',
+  sofa: 'shape_sofa',
   roundTable: 'shape_round_table',
   chair: 'shape_chair',
   giftBox: 'shape_gift_box',
@@ -178,6 +179,13 @@ export function ensureBaseShapeTextures(scene: Phaser.Scene): void {
   makeTexture(scene, SHAPE.softRect, 100, 100, (g) => {
     g.fillStyle(WHITE, 1);
     g.fillRoundedRect(0, 0, 100, 100, 24);
+  });
+
+  makeTexture(scene, SHAPE.sofa, 160, 96, (g) => {
+    g.fillStyle(WHITE, 1);
+    g.fillRoundedRect(0, 20, 160, 70, 22);
+    g.fillRoundedRect(0, 0, 34, 90, 16);
+    g.fillRoundedRect(126, 0, 34, 90, 16);
   });
 
   makeTexture(scene, SHAPE.roundTable, 90, 90, (g) => {

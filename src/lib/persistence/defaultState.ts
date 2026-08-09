@@ -56,13 +56,13 @@ export function createDefaultGameState(playerId: string): GameState {
       dog_01: {
         petId: 'dog_01',
         buildingId: HOME_BUILDING_ID,
-        position: { x: 200, y: 760 },
+        position: { x: 130, y: 745 },
         carriedByCharacterId: null,
       },
       cat_01: {
         petId: 'cat_01',
         buildingId: HOME_BUILDING_ID,
-        position: { x: 720, y: 740 },
+        position: { x: 1000, y: 715 },
         carriedByCharacterId: null,
       },
     },

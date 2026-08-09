@@ -68,6 +68,9 @@ export function furnitureVisual(furniture: FurnitureEntity): { texture: string }
   if (furniture.category === 'seating' && furniture.id.startsWith('chair')) {
     return { texture: SHAPE.chair };
   }
+  if (furniture.category === 'seating' && furniture.id.startsWith('sofa')) {
+    return { texture: SHAPE.sofa };
+  }
   if (furniture.category === 'table') return { texture: SHAPE.roundTable };
   return { texture: SHAPE.softRect };
 }

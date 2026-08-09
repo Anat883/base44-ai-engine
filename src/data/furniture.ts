@@ -29,7 +29,9 @@ const chairEntities: FurnitureEntity[] = CHAIRS.map(([id, name, color]) =>
     isCollectible: false,
     isMovable: true,
     primaryColor: color,
-    footprint: { width: 60, height: 60 },
+    // Matches chair.png's own aspect ratio (752x724) at a size that reads
+    // against the illustrated room backgrounds instead of a tiny icon.
+    footprint: { width: 110, height: 106 },
   }),
 );
 
@@ -47,7 +49,8 @@ export const FURNITURE: FurnitureEntity[] = [
     isCollectible: false,
     isMovable: true,
     primaryColor: '#FF8FD1',
-    footprint: { width: 160, height: 70 },
+    // Matches sofa.png's own aspect ratio (960x576).
+    footprint: { width: 260, height: 156 },
   }),
   furniture({
     id: 'table_01',
@@ -62,7 +65,8 @@ export const FURNITURE: FurnitureEntity[] = [
     isCollectible: false,
     isMovable: true,
     primaryColor: '#FFD34D',
-    footprint: { width: 90, height: 90 },
+    // Matches table.png's own aspect ratio (760x646).
+    footprint: { width: 150, height: 127 },
   }),
   ...chairEntities,
 ];

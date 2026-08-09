@@ -9,6 +9,12 @@ import outfitDressUrl from '@/assets/characters/outfit-dress.png';
 import outfitTrimUrl from '@/assets/characters/outfit-trim.png';
 import glassesUrl from '@/assets/characters/glasses.png';
 import hairBowUrl from '@/assets/characters/hair-bow.png';
+import sofaUrl from '@/assets/furniture/sofa.png';
+import tableUrl from '@/assets/furniture/table.png';
+import chairUrl from '@/assets/furniture/chair.png';
+import petBodyUrl from '@/assets/furniture/pet-body.png';
+import petEarRoundUrl from '@/assets/furniture/pet-ear-round.png';
+import petEarPointyUrl from '@/assets/furniture/pet-ear-pointy.png';
 
 /**
  * Illustrated (Toca Boca-style) replacements for a subset of SHAPE keys.
@@ -31,6 +37,12 @@ const SHAPE_IMAGE_SOURCES: Partial<Record<(typeof SHAPE)[keyof typeof SHAPE], st
   [SHAPE.outfitTrim]: outfitTrimUrl,
   [SHAPE.glasses]: glassesUrl,
   [SHAPE.hairBow]: hairBowUrl,
+  [SHAPE.sofa]: sofaUrl,
+  [SHAPE.roundTable]: tableUrl,
+  [SHAPE.chair]: chairUrl,
+  [SHAPE.petBody]: petBodyUrl,
+  [SHAPE.petEarRound]: petEarRoundUrl,
+  [SHAPE.petEarPointy]: petEarPointyUrl,
 };
 
 /** Queue the illustrated shape PNGs for loading. Call from a scene's `preload()`. */
